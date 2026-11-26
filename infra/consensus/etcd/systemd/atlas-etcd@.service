@@ -1,0 +1,16 @@
+[Unit]
+Description=ATLAS etcd consensus member %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/atlas-etcd-member %i
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+LimitNOFILE=40000
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
