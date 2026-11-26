@@ -1,0 +1,477 @@
+ATLAS Regional Health Controller
+Mode: Continuous read-only monitoring
+Regions: Mumbai | Singapore | Frankfurt
+Interval: 1s
+{
+  "timestamp": "2026-11-26T16:42:21.283903549Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 2.208,
+      "checked_at": "2026-11-26T16:42:21.281479996Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 2.067,
+      "checked_at": "2026-11-26T16:42:21.281610873Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 2.421,
+      "checked_at": "2026-11-26T16:42:21.28145837Z"
+    }
+  ],
+  "events": [
+    {
+      "event": "REGION_STATE_INITIALIZED",
+      "region": "Mumbai",
+      "previous_status": "",
+      "current_status": "healthy",
+      "observed_at": "2026-11-26T16:42:21.281479996Z"
+    },
+    {
+      "event": "REGION_STATE_INITIALIZED",
+      "region": "Singapore",
+      "previous_status": "",
+      "current_status": "healthy",
+      "observed_at": "2026-11-26T16:42:21.281610873Z"
+    },
+    {
+      "event": "REGION_STATE_INITIALIZED",
+      "region": "Frankfurt",
+      "previous_status": "",
+      "current_status": "healthy",
+      "observed_at": "2026-11-26T16:42:21.28145837Z"
+    }
+  ]
+}
+{
+  "timestamp": "2026-11-26T16:42:22.287299062Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 2.48,
+      "checked_at": "2026-11-26T16:42:22.284689046Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.719,
+      "checked_at": "2026-11-26T16:42:22.285470563Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 2.304,
+      "checked_at": "2026-11-26T16:42:22.284975386Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:23.289851439Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.341,
+      "checked_at": "2026-11-26T16:42:23.28850241Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.793,
+      "checked_at": "2026-11-26T16:42:23.288589912Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.128,
+      "checked_at": "2026-11-26T16:42:23.288323739Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:24.293224842Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.556,
+      "checked_at": "2026-11-26T16:42:24.291663849Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.663,
+      "checked_at": "2026-11-26T16:42:24.292476242Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.965,
+      "checked_at": "2026-11-26T16:42:24.291143546Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:25.298354082Z",
+  "status": "degraded",
+  "healthy_regions": 2,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.565,
+      "checked_at": "2026-11-26T16:42:25.296523417Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": false,
+      "status_code": 0,
+      "latency_ms": 1.657,
+      "checked_at": "2026-11-26T16:42:25.296683212Z",
+      "error": "Get \"http://10.10.2.1:8080/health\": dial tcp 10.10.2.1:8080: connect: connection refused"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.575,
+      "checked_at": "2026-11-26T16:42:25.296512834Z"
+    }
+  ],
+  "events": [
+    {
+      "event": "REGION_STATE_CHANGED",
+      "region": "Singapore",
+      "previous_status": "healthy",
+      "current_status": "unhealthy",
+      "observed_at": "2026-11-26T16:42:25.296683212Z",
+      "reason": "Get \"http://10.10.2.1:8080/health\": dial tcp 10.10.2.1:8080: connect: connection refused"
+    }
+  ]
+}
+{
+  "timestamp": "2026-11-26T16:42:26.303332077Z",
+  "status": "degraded",
+  "healthy_regions": 2,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.908,
+      "checked_at": "2026-11-26T16:42:26.302387347Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": false,
+      "status_code": 0,
+      "latency_ms": 0.539,
+      "checked_at": "2026-11-26T16:42:26.302513809Z",
+      "error": "Get \"http://10.10.2.1:8080/health\": dial tcp 10.10.2.1:8080: connect: connection refused"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.851,
+      "checked_at": "2026-11-26T16:42:26.302469933Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:27.309243306Z",
+  "status": "degraded",
+  "healthy_regions": 2,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.67,
+      "checked_at": "2026-11-26T16:42:27.308540583Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": false,
+      "status_code": 0,
+      "latency_ms": 0.279,
+      "checked_at": "2026-11-26T16:42:27.308610084Z",
+      "error": "Get \"http://10.10.2.1:8080/health\": dial tcp 10.10.2.1:8080: connect: connection refused"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.704,
+      "checked_at": "2026-11-26T16:42:27.30851979Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:28.310805656Z",
+  "status": "degraded",
+  "healthy_regions": 2,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.716,
+      "checked_at": "2026-11-26T16:42:28.31004614Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": false,
+      "status_code": 0,
+      "latency_ms": 0.65,
+      "checked_at": "2026-11-26T16:42:28.310121975Z",
+      "error": "Get \"http://10.10.2.1:8080/health\": dial tcp 10.10.2.1:8080: connect: connection refused"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.707,
+      "checked_at": "2026-11-26T16:42:28.310026639Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:29.319524253Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.523,
+      "checked_at": "2026-11-26T16:42:29.316042385Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 3.032,
+      "checked_at": "2026-11-26T16:42:29.316486228Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.157,
+      "checked_at": "2026-11-26T16:42:29.316045427Z"
+    }
+  ],
+  "events": [
+    {
+      "event": "REGION_STATE_CHANGED",
+      "region": "Singapore",
+      "previous_status": "unhealthy",
+      "current_status": "healthy",
+      "observed_at": "2026-11-26T16:42:29.316486228Z"
+    }
+  ]
+}
+{
+  "timestamp": "2026-11-26T16:42:30.322240309Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.338,
+      "checked_at": "2026-11-26T16:42:30.320771152Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.948,
+      "checked_at": "2026-11-26T16:42:30.321191828Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.456,
+      "checked_at": "2026-11-26T16:42:30.32077911Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:31.324947163Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.3,
+      "checked_at": "2026-11-26T16:42:31.323601091Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 0.809,
+      "checked_at": "2026-11-26T16:42:31.324039976Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.388,
+      "checked_at": "2026-11-26T16:42:31.323552799Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:32.330888179Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.727,
+      "checked_at": "2026-11-26T16:42:32.329132349Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.357,
+      "checked_at": "2026-11-26T16:42:32.329528024Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.717,
+      "checked_at": "2026-11-26T16:42:32.329100556Z"
+    }
+  ],
+  "events": null
+}
+{
+  "timestamp": "2026-11-26T16:42:33.333748842Z",
+  "status": "healthy",
+  "healthy_regions": 3,
+  "total_regions": 3,
+  "results": [
+    {
+      "region": "Mumbai",
+      "endpoint": "http://10.10.1.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.209,
+      "checked_at": "2026-11-26T16:42:33.332417062Z"
+    },
+    {
+      "region": "Singapore",
+      "endpoint": "http://10.10.2.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.002,
+      "checked_at": "2026-11-26T16:42:33.332608442Z"
+    },
+    {
+      "region": "Frankfurt",
+      "endpoint": "http://10.10.3.1:8080/health",
+      "healthy": true,
+      "status_code": 200,
+      "latency_ms": 1.332,
+      "checked_at": "2026-11-26T16:42:33.332412521Z"
+    }
+  ],
+  "events": null
+}
+ATLAS monitoring stopped gracefully
