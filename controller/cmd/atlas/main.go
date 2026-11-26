@@ -7,17 +7,20 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"atlas.local/control-plane/controller/internal/health"
 )
 
 type Report struct {
-	Timestamp      string          `json:"timestamp"`
-	Status         string          `json:"status"`
-	HealthyRegions int             `json:"healthy_regions"`
-	TotalRegions   int             `json:"total_regions"`
-	Results        []health.Result `json:"results"`
+	Timestamp      string              `json:"timestamp"`
+	Status         string              `json:"status"`
+	HealthyRegions int                 `json:"healthy_regions"`
+	TotalRegions   int                 `json:"total_regions"`
+	Results        []health.Result     `json:"results"`
+	Events         []health.Transition `json:"events"`
 }
 
 func main() {
@@ -41,19 +44,24 @@ func main() {
 		Timeout: *timeout,
 	}
 
+	tracker := health.NewTracker()
+
 	fmt.Println("ATLAS Regional Health Controller")
-	fmt.Println("Mode: Read-only monitoring")
+	fmt.Println("Mode: Continuous read-only monitoring")
 	fmt.Println("Regions: Mumbai | Singapore | Frankfurt")
+	fmt.Println("Interval:", *interval)
 
 	run := func() {
 		ctx := context.Background()
 		results := health.CheckAll(ctx, client, regions)
+		events := tracker.Observe(results)
 
 		report := Report{
 			Timestamp:    time.Now().UTC().Format(time.RFC3339Nano),
 			Status:       "healthy",
 			TotalRegions: len(regions),
 			Results:      results,
+			Events:       events,
 		}
 
 		for _, result := range results {
@@ -72,13 +80,26 @@ func main() {
 		}
 	}
 
+	if *once {
+		run()
+		return
+	}
+
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
 	for {
 		run()
 
-		if *once {
+		select {
+		case <-ctx.Done():
+			fmt.Println("ATLAS monitoring stopped gracefully")
 			return
+		case <-time.After(*interval):
 		}
-
-		time.Sleep(*interval)
 	}
 }
