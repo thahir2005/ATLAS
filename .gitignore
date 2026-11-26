@@ -7,3 +7,5 @@ bin/
 tmp/
 coverage.out
 /build/
+*-events.jsonl
+*-events.jsonl.gz
