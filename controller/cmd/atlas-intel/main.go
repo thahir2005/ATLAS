@@ -30,9 +30,10 @@ type routingResult struct {
 }
 
 type regionReport struct {
-	Assessment intelligence.RegionAssessment `json:"assessment"`
-	Routing    routing.Snapshot              `json:"routing"`
-	BGPError   string                        `json:"bgp_error,omitempty"`
+	Assessment       intelligence.RegionAssessment `json:"assessment"`
+	RecoveryDecision intelligence.RecoveryDecision `json:"recovery_decision"`
+	Routing          routing.Snapshot              `json:"routing"`
+	BGPError         string                        `json:"bgp_error,omitempty"`
 }
 
 type report struct {
@@ -169,10 +170,17 @@ func main() {
 				continue
 			}
 
+			decision, err := intelligence.BuildRecoveryDecision(assessment)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "recovery decision error:", err)
+				continue
+			}
+
 			regionStates = append(regionStates, regionReport{
-				Assessment: assessment,
-				Routing:    result.Snapshot,
-				BGPError:   result.Error,
+				Assessment:       assessment,
+				RecoveryDecision: decision,
+				Routing:          result.Snapshot,
+				BGPError:         result.Error,
 			})
 		}
 
