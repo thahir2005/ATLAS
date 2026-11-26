@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"atlas.local/control-plane/controller/internal/database"
 	"atlas.local/control-plane/controller/internal/health"
 	"atlas.local/control-plane/controller/internal/intelligence"
 	"atlas.local/control-plane/controller/internal/routing"
@@ -30,10 +32,12 @@ type routingResult struct {
 }
 
 type regionReport struct {
-	Assessment       intelligence.RegionAssessment `json:"assessment"`
-	RecoveryDecision intelligence.RecoveryDecision `json:"recovery_decision"`
-	Routing          routing.Snapshot              `json:"routing"`
-	BGPError         string                        `json:"bgp_error,omitempty"`
+	Assessment       intelligence.RegionAssessment   `json:"assessment"`
+	RecoveryDecision intelligence.RecoveryDecision   `json:"recovery_decision"`
+	Database         intelligence.DatabaseAssessment `json:"database"`
+	DatabaseError    string                          `json:"database_error,omitempty"`
+	Routing          routing.Snapshot                `json:"routing"`
+	BGPError         string                          `json:"bgp_error,omitempty"`
 }
 
 type report struct {
@@ -60,6 +64,7 @@ func main() {
 	once := flag.Bool("once", false, "Run one assessment and exit")
 	interval := flag.Duration("interval", 5*time.Second, "Monitoring interval")
 	timeout := flag.Duration("timeout", 4*time.Second, "Per-observation timeout")
+	metricsAddress := flag.String("metrics-address", ":9090", "Prometheus metrics listen address")
 	failureThreshold := flag.Int("failure-threshold", 3, "Consecutive failures before declaring unhealthy")
 	recoveryThreshold := flag.Int("recovery-threshold", 2, "Consecutive successes before declaring healthy")
 	flag.Parse()
@@ -105,9 +110,28 @@ func main() {
 		{Name: "Frankfurt", URL: "http://10.10.3.1:8080/health"},
 	}
 
+	databaseProbes := []databaseProbe{
+		{
+			Region:  "Mumbai",
+			DSN:     os.Getenv("ATLAS_PG_DSN_MUMBAI"),
+			EnvName: "ATLAS_PG_DSN_MUMBAI",
+		},
+		{
+			Region:  "Singapore",
+			DSN:     os.Getenv("ATLAS_PG_DSN_SINGAPORE"),
+			EnvName: "ATLAS_PG_DSN_SINGAPORE",
+		},
+		{
+			Region:  "Frankfurt",
+			DSN:     os.Getenv("ATLAS_PG_DSN_FRANKFURT"),
+			EnvName: "ATLAS_PG_DSN_FRANKFURT",
+		},
+	}
+
 	client := &http.Client{Timeout: *timeout}
 	observer := routing.Observer{Runner: routing.ExecRunner{}}
 	encoder := json.NewEncoder(os.Stdout)
+	metrics := &metricsHandler{}
 
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
@@ -115,6 +139,22 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
+
+	metricsServer := &http.Server{
+		Addr:              *metricsAddress,
+		Handler:           metrics,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+	go func() {
+		if err := metricsServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			fmt.Fprintln(os.Stderr, "metrics server:", err)
+		}
+	}()
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		_ = metricsServer.Shutdown(shutdownCtx)
+	}()
 
 	run := func() {
 		cycleStarted := time.Now()
@@ -148,6 +188,36 @@ func main() {
 
 				return result
 			},
+			databaseProbes,
+			func(p databaseProbe) databaseResult {
+				result := databaseResult{Probe: p}
+
+				if p.DSN == "" {
+					result.Error = p.EnvName + " is not configured"
+					return result
+				}
+
+				result.Configured = true
+
+				dbCtx, dbCancel := context.WithTimeout(ctx, *timeout)
+				defer dbCancel()
+
+				dbObserver, err := database.Open(dbCtx, p.DSN)
+				if err != nil {
+					result.Error = err.Error()
+					return result
+				}
+				defer dbObserver.Close()
+
+				snapshot, err := dbObserver.Snapshot(dbCtx, p.Region)
+				if err != nil {
+					result.Error = err.Error()
+					return result
+				}
+
+				result.Snapshot = snapshot
+				return result
+			},
 		)
 
 		// Collect application results and update the tracker in this goroutine.
@@ -176,9 +246,56 @@ func main() {
 				continue
 			}
 
+			dbAssessment := intelligence.AssessDatabase(
+				result.Probe.Name,
+				database.Snapshot{},
+				nil,
+				2,
+			)
+			dbError := ""
+
+			for _, dbResult := range batch.Databases {
+				if dbResult.Probe.Region != result.Probe.Name {
+					continue
+				}
+
+				dbError = dbResult.Error
+
+				if !dbResult.Configured {
+					// Missing configuration is unknown, not a database outage.
+					dbAssessment.Reason = dbResult.Error
+				} else if dbResult.Error != "" {
+					dbAssessment = intelligence.AssessDatabase(
+						result.Probe.Name,
+						dbResult.Snapshot,
+						errors.New(dbResult.Error),
+						2,
+					)
+				} else {
+					dbAssessment = intelligence.AssessDatabase(
+						result.Probe.Name,
+						dbResult.Snapshot,
+						nil,
+						2,
+					)
+				}
+				break
+			}
+
+			decision, err = intelligence.BuildRecoveryDecisionWithDatabase(
+				assessment,
+				dbAssessment,
+			)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "database-aware recovery decision error:", err)
+				continue
+			}
+
 			regionStates = append(regionStates, regionReport{
 				Assessment:       assessment,
 				RecoveryDecision: decision,
+				Database:         dbAssessment,
+				DatabaseError:    dbError,
 				Routing:          result.Snapshot,
 				BGPError:         result.Error,
 			})
@@ -194,6 +311,8 @@ func main() {
 			HealthTransitions:  transitions,
 			Regions:            regionStates,
 		}
+
+		metrics.Update(output)
 
 		if err := encoder.Encode(output); err != nil {
 			fmt.Fprintln(os.Stderr, "JSON encoding error:", err)

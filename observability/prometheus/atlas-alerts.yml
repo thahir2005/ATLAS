@@ -1,0 +1,34 @@
+groups:
+  - name: atlas-infrastructure
+    rules:
+      - alert: AtlasApplicationDown
+        expr: atlas_application_up == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Application is down in {{ $labels.region }}"
+
+      - alert: AtlasBGPPeerDown
+        expr: atlas_bgp_peer_up == 0
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "BGP peer {{ $labels.peer }} is down in {{ $labels.region }}"
+
+      - alert: AtlasDatabaseUnavailable
+        expr: atlas_database_up == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database unavailable in {{ $labels.region }}"
+
+      - alert: AtlasControllerScrapeFailed
+        expr: up{job="atlas-controller"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus cannot scrape the ATLAS controller"
