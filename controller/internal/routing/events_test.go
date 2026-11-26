@@ -141,3 +141,51 @@ func TestNewPeerDetection(t *testing.T) {
 		t.Fatalf("expected new peer event, got %+v", events)
 	}
 }
+
+func TestRawRouteOutputChangeDoesNotEmitEvent(t *testing.T) {
+	previous := Snapshot{
+		KernelRoute: &KernelRoute{
+			Target:    "10.10.2.1",
+			NextHop:   "172.20.12.2",
+			Interface: "ms0",
+			Source:    "172.20.12.1",
+			Raw:       "10.10.2.1 via 172.20.12.2 dev ms0 uid 0 cache",
+		},
+	}
+
+	current := Snapshot{
+		KernelRoute: &KernelRoute{
+			Target:    "10.10.2.1",
+			NextHop:   "172.20.12.2",
+			Interface: "ms0",
+			Source:    "172.20.12.1",
+			Raw:       "10.10.2.1 via 172.20.12.2 dev ms0 uid 1000 cache",
+		},
+	}
+
+	events := CompareSnapshots(&previous, current)
+
+	if len(events) != 0 {
+		t.Fatalf("raw output change must not emit route event, got %+v", events)
+	}
+}
+
+func TestKernelRouteErrorChangeEmitsEvent(t *testing.T) {
+	previous := Snapshot{
+		KernelRouteError: "route unavailable",
+	}
+
+	current := Snapshot{
+		KernelRoute: &KernelRoute{
+			Target:    "10.10.2.1",
+			NextHop:   "172.20.31.1",
+			Interface: "fm0",
+		},
+	}
+
+	events := CompareSnapshots(&previous, current)
+
+	if len(events) != 1 || events[0].Event != "KERNEL_ROUTE_CHANGE" {
+		t.Fatalf("expected kernel route recovery event, got %+v", events)
+	}
+}

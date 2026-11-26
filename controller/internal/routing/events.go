@@ -12,6 +12,17 @@ type Event struct {
 	Details   any    `json:"details"`
 }
 
+func routesEqual(a, b *KernelRoute) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+
+	return a.Target == b.Target &&
+		a.NextHop == b.NextHop &&
+		a.Interface == b.Interface &&
+		a.Source == b.Source
+}
+
 func CompareSnapshots(previous *Snapshot, current Snapshot) []Event {
 	var events []Event
 
@@ -73,7 +84,7 @@ func CompareSnapshots(previous *Snapshot, current Snapshot) []Event {
 		})
 	}
 
-	if !reflect.DeepEqual(previous.KernelRoute, current.KernelRoute) ||
+	if !routesEqual(previous.KernelRoute, current.KernelRoute) ||
 		previous.KernelRouteError != current.KernelRouteError {
 		emit("KERNEL_ROUTE_CHANGE", map[string]any{
 			"previous":      previous.KernelRoute,
