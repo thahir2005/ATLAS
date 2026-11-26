@@ -37,6 +37,8 @@ type regionReport struct {
 
 type report struct {
 	Timestamp          string              `json:"timestamp"`
+	CycleStartedAt     string              `json:"cycle_started_at"`
+	CycleCompletedAt   string              `json:"cycle_completed_at"`
 	ApplicationResults []health.Result     `json:"application_results"`
 	HealthTransitions  []health.Transition `json:"health_transitions"`
 	Regions            []regionReport      `json:"regions"`
@@ -114,16 +116,16 @@ func main() {
 	defer stop()
 
 	run := func() {
-		checkCtx, cancel := context.WithTimeout(ctx, *timeout+2*time.Second)
-		defer cancel()
+		cycleStarted := time.Now()
 
-		appResults := health.CheckAll(checkCtx, client, appRegions)
-		transitions := tracker.Observe(appResults)
-
-		resultChannel := make(chan routingResult, len(probes))
-
-		for _, probe := range probes {
-			go func(p regionProbe) {
+		batch := collectConcurrently(
+			func() []health.Result {
+				appCtx, appCancel := context.WithTimeout(ctx, *timeout+2*time.Second)
+				defer appCancel()
+				return health.CheckAll(appCtx, client, appRegions)
+			},
+			probes,
+			func(p regionProbe) routingResult {
 				probeCtx, probeCancel := context.WithTimeout(ctx, *timeout)
 				defer probeCancel()
 
@@ -143,14 +145,18 @@ func main() {
 					result.Error = err.Error()
 				}
 
-				resultChannel <- result
-			}(probe)
-		}
+				return result
+			},
+		)
 
-		appStates := make([]regionReport, 0, len(probes))
+		// Collect application results and update the tracker in this goroutine.
+		appResults := batch.Applications
+		transitions := tracker.Observe(appResults)
 
-		for range probes {
-			result := <-resultChannel
+		// Collect routing observations and combine both monitoring layers.
+		regionStates := make([]regionReport, 0, len(probes))
+
+		for _, result := range batch.Routing {
 
 			assessment, err := intelligence.EvaluateRegion(
 				result.Probe.Name,
@@ -163,18 +169,22 @@ func main() {
 				continue
 			}
 
-			appStates = append(appStates, regionReport{
+			regionStates = append(regionStates, regionReport{
 				Assessment: assessment,
 				Routing:    result.Snapshot,
 				BGPError:   result.Error,
 			})
 		}
 
+		cycleCompleted := time.Now()
+
 		output := report{
-			Timestamp:          time.Now().UTC().Format(time.RFC3339Nano),
+			Timestamp:          cycleCompleted.UTC().Format(time.RFC3339Nano),
+			CycleStartedAt:     cycleStarted.UTC().Format(time.RFC3339Nano),
+			CycleCompletedAt:   cycleCompleted.UTC().Format(time.RFC3339Nano),
 			ApplicationResults: appResults,
 			HealthTransitions:  transitions,
-			Regions:            appStates,
+			Regions:            regionStates,
 		}
 
 		if err := encoder.Encode(output); err != nil {
