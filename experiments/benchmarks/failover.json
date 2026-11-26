@@ -1,0 +1,16 @@
+{
+  "target": "http://10.10.2.1:8080/region",
+  "duration_seconds": 30.000305497,
+  "concurrency": 5,
+  "total_requests": 2656971,
+  "successful_requests": 2656971,
+  "failed_requests": 0,
+  "success_rate_percent": 100,
+  "failure_rate_percent": 0,
+  "average_latency_ms": 0.05583313479882173,
+  "p50_latency_ms": 0.037,
+  "p95_latency_ms": 0.108,
+  "p99_latency_ms": 0.344,
+  "min_latency_ms": 0.012,
+  "max_latency_ms": 205.745
+}
