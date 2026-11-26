@@ -19,6 +19,7 @@ type Report struct {
 	Status         string              `json:"status"`
 	HealthyRegions int                 `json:"healthy_regions"`
 	TotalRegions   int                 `json:"total_regions"`
+	RegionStates   map[string]string   `json:"region_states"`
 	Results        []health.Result     `json:"results"`
 	Events         []health.Transition `json:"events"`
 }
@@ -27,10 +28,21 @@ func main() {
 	once := flag.Bool("once", false, "Run one health-check cycle")
 	interval := flag.Duration("interval", 5*time.Second, "Health-check interval")
 	timeout := flag.Duration("timeout", 2*time.Second, "Per-request timeout")
+	failureThreshold := flag.Int("failure-threshold", 3, "Consecutive failures before unhealthy")
+	recoveryThreshold := flag.Int("recovery-threshold", 2, "Consecutive successes before healthy")
 	flag.Parse()
 
 	if *interval <= 0 || *timeout <= 0 {
 		fmt.Fprintln(os.Stderr, "interval and timeout must be positive")
+		os.Exit(1)
+	}
+
+	tracker, err := health.NewTrackerWithThresholds(
+		*failureThreshold,
+		*recoveryThreshold,
+	)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "invalid health thresholds:", err)
 		os.Exit(1)
 	}
 
@@ -44,12 +56,12 @@ func main() {
 		Timeout: *timeout,
 	}
 
-	tracker := health.NewTracker()
-
 	fmt.Println("ATLAS Regional Health Controller")
 	fmt.Println("Mode: Continuous read-only monitoring")
 	fmt.Println("Regions: Mumbai | Singapore | Frankfurt")
 	fmt.Println("Interval:", *interval)
+	fmt.Println("Failure threshold:", *failureThreshold)
+	fmt.Println("Recovery threshold:", *recoveryThreshold)
 
 	run := func() {
 		ctx := context.Background()
@@ -60,12 +72,16 @@ func main() {
 			Timestamp:    time.Now().UTC().Format(time.RFC3339Nano),
 			Status:       "healthy",
 			TotalRegions: len(regions),
+			RegionStates: make(map[string]string),
 			Results:      results,
 			Events:       events,
 		}
 
 		for _, result := range results {
-			if result.Healthy {
+			state := tracker.Status(result.Region)
+			report.RegionStates[result.Region] = state
+
+			if state == "healthy" {
 				report.HealthyRegions++
 			} else {
 				report.Status = "degraded"
