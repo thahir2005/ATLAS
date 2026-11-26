@@ -9,3 +9,5 @@ coverage.out
 /build/
 *-events.jsonl
 *-events.jsonl.gz
+__pycache__/
+*.py[cod]
