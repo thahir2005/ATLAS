@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -32,6 +33,14 @@ type Result struct {
 	Errors         map[string]int `json:"errors,omitempty"`
 }
 
+type RequestEvent struct {
+	StartTime  string  `json:"start_time"`
+	DurationMS float64 `json:"duration_ms"`
+	StatusCode int     `json:"status_code"`
+	Success    bool    `json:"success"`
+	Error      string  `json:"error,omitempty"`
+}
+
 func percentile(v []float64, p float64) float64 {
 	if len(v) == 0 {
 		return 0
@@ -52,7 +61,8 @@ func main() {
 	duration := flag.Duration("duration", 30*time.Second, "Test duration")
 	concurrency := flag.Int("concurrency", 5, "Concurrent workers")
 	timeout := flag.Duration("timeout", 2*time.Second, "Request timeout")
-	output := flag.String("output", "", "JSON output file")
+	output := flag.String("output", "", "Summary JSON output file")
+	events := flag.String("events", "", "Per-request JSONL event output file")
 	flag.Parse()
 
 	if *duration <= 0 || *concurrency <= 0 || *timeout <= 0 {
@@ -88,6 +98,20 @@ func main() {
 		Timeout:   *timeout,
 	}
 
+	var eventFile *os.File
+	var eventWriter *bufio.Writer
+
+	if *events != "" {
+		eventFile, err = os.Create(*events)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Cannot create event file:", err)
+			os.Exit(1)
+		}
+		defer eventFile.Close()
+		eventWriter = bufio.NewWriter(eventFile)
+		defer eventWriter.Flush()
+	}
+
 	stop := make(chan struct{})
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -96,16 +120,25 @@ func main() {
 	success, failed := 0, 0
 	errors := make(map[string]int)
 
-	record := func(ms float64, ok bool, reason string) {
+	record := func(event RequestEvent) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		latencies = append(latencies, ms)
-		if ok {
+		latencies = append(latencies, event.DurationMS)
+
+		if event.Success {
 			success++
 		} else {
 			failed++
-			errors[reason]++
+			errors[event.Error]++
+		}
+
+		if eventWriter != nil {
+			data, err := json.Marshal(event)
+			if err == nil {
+				eventWriter.Write(data)
+				eventWriter.WriteByte('\n')
+			}
 		}
 	}
 
@@ -131,34 +164,41 @@ func main() {
 				}
 
 				requestStart := time.Now()
-				req, err := http.NewRequest(http.MethodGet, *target, nil)
+				event := RequestEvent{
+					StartTime: requestStart.UTC().Format(time.RFC3339Nano),
+				}
 
+				req, err := http.NewRequest(http.MethodGet, *target, nil)
 				if err != nil {
-					record(float64(time.Since(requestStart).Microseconds())/1000, false, "request_error")
+					event.DurationMS = float64(time.Since(requestStart).Microseconds()) / 1000
+					event.Error = "request_error"
+					record(event)
 					continue
 				}
 
 				resp, err := client.Do(req)
-
 				if err != nil {
-					record(float64(time.Since(requestStart).Microseconds())/1000, false, "connection_error")
+					event.DurationMS = float64(time.Since(requestStart).Microseconds()) / 1000
+					event.Error = "connection_error"
+					record(event)
 					continue
 				}
 
+				event.StatusCode = resp.StatusCode
 				_, readErr := io.Copy(io.Discard, resp.Body)
 				resp.Body.Close()
 
-				ms := float64(time.Since(requestStart).Microseconds()) / 1000
-				ok := resp.StatusCode >= 200 && resp.StatusCode < 300 && readErr == nil
+				event.DurationMS = float64(time.Since(requestStart).Microseconds()) / 1000
+				event.Success = resp.StatusCode >= 200 &&
+					resp.StatusCode < 300 && readErr == nil
 
-				reason := ""
 				if readErr != nil {
-					reason = "response_read_error"
-				} else if !ok {
-					reason = fmt.Sprintf("http_status_%d", resp.StatusCode)
+					event.Error = "response_read_error"
+				} else if !event.Success {
+					event.Error = fmt.Sprintf("http_status_%d", resp.StatusCode)
 				}
 
-				record(ms, ok, reason)
+				record(event)
 			}
 		}()
 	}
@@ -172,8 +212,6 @@ func main() {
 	elapsed := time.Since(start).Seconds()
 
 	mu.Lock()
-	defer mu.Unlock()
-
 	sort.Float64s(latencies)
 
 	total := success + failed
@@ -207,6 +245,8 @@ func main() {
 		r.MaxLatency = latencies[len(latencies)-1]
 	}
 
+	mu.Unlock()
+
 	data, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -229,7 +269,11 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		fmt.Println("Saved:", *output)
+		fmt.Println("Saved summary:", *output)
+	}
+
+	if *events != "" {
+		fmt.Println("Saved request events:", *events)
 	}
 
 	fmt.Println(string(data))
