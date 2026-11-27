@@ -11,6 +11,7 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'services/region-api/**'
+      - '.github/workflows/publish-image.yml'
   workflow_dispatch:
 
 permissions:
@@ -67,6 +68,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+
+      - name: Scan published image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/atlas-region-api:sha-${{ github.sha }}
+          format: table
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
 
       - name: Update Kubernetes image manifests
         env:
