@@ -1,0 +1,39 @@
+name: ATLAS GitOps Image Update
+
+on:
+  workflow_run:
+    workflows: ["ATLAS Container Publish"]
+    types:
+      - completed
+    branches:
+      - feature/independent-monitoring
+
+permissions:
+  contents: write
+
+jobs:
+  update-manifest:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/independent-monitoring
+
+      - name: Update Kubernetes image tag
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY_OWNER}/atlas-region-api:sha-${SOURCE_SHA:0:7}"
+          sed -i "s|ghcr.io/${GITHUB_REPOSITORY_OWNER}/atlas-region-api:.*|${IMAGE}|" infra/kubernetes/atlas-regions.yaml
+
+      - name: Commit and push GitOps update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add infra/kubernetes/atlas-regions.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "deploy: update ATLAS region API image"
+          git push origin HEAD:feature/independent-monitoring
