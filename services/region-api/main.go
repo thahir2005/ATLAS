@@ -16,6 +16,7 @@ type Response struct {
 }
 
 var region string
+var version = "1.0.0"
 
 func respond(w http.ResponseWriter, status string) {
 	w.Header().Set("Content-Type", "application/json")
@@ -58,6 +59,15 @@ func main() {
 
 	http.HandleFunc("/region", func(w http.ResponseWriter, r *http.Request) {
 		respond(w, "available")
+	})
+
+	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"service": "ATLAS Regional API",
+			"version": version,
+			"region":  region,
+		})
 	})
 
 	log.Printf("ATLAS Regional API starting: region=%s address=%s", region, *listen)
