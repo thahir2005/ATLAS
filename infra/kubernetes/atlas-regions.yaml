@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: regional-api
-          image: ghcr.io/thahir2005/atlas-region-api:sha-1b058c5
+          image: ghcr.io/thahir2005/atlas-region-api:sha-adebf97
           imagePullPolicy: IfNotPresent
           args: ["--listen=:8080", "--region=Mumbai"]
           resources:
@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
         - name: regional-api
-          image: ghcr.io/thahir2005/atlas-region-api:sha-1b058c5
+          image: ghcr.io/thahir2005/atlas-region-api:sha-adebf97
           imagePullPolicy: IfNotPresent
           args: ["--listen=:8080", "--region=Singapore"]
           resources:
@@ -130,7 +130,7 @@ spec:
     spec:
       containers:
         - name: regional-api
-          image: ghcr.io/thahir2005/atlas-region-api:sha-1b058c5
+          image: ghcr.io/thahir2005/atlas-region-api:sha-adebf97
           imagePullPolicy: IfNotPresent
           args: ["--listen=:8080", "--region=Frankfurt"]
           resources:
