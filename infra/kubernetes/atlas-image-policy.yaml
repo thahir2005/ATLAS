@@ -8,8 +8,8 @@ metadata:
     policies.kyverno.io/minversion: 1.20.0
 spec:
   validationActions:
-    - Audit
-  failurePolicy: Ignore
+    - Deny
+  failurePolicy: Fail
   webhookConfiguration:
     timeoutSeconds: 30
   matchConstraints:
