@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
 
 jobs:
   publish:
@@ -59,6 +60,7 @@ jobs:
 
       - name: Build and publish image
         uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -94,6 +96,16 @@ jobs:
           path: sbom.cdx.json
           if-no-files-found: error
           retention-days: 90
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.2
+
+      - name: Sign container image with Cosign
+        env:
+          IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/atlas-region-api
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          cosign sign --yes "${IMAGE_NAME}@${IMAGE_DIGEST}"
 
       - name: Update Kubernetes image manifests
         env:
