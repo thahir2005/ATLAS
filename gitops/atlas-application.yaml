@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atlas-regions
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/thahir2005/ATLAS.git
+    targetRevision: feature/independent-monitoring
+    path: infra/kubernetes
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: atlas
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: mumbai-api
+      namespace: atlas
+      jsonPointers:
+        - /spec/replicas
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
