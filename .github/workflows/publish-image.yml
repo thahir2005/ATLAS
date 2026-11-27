@@ -79,6 +79,22 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
+      - name: Generate container SBOM
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/atlas-region-api:sha-${{ github.sha }}
+          format: cyclonedx
+          output: sbom.cdx.json
+          exit-code: '0'
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-container-sbom-${{ github.sha }}
+          path: sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Update Kubernetes image manifests
         env:
           IMAGE_TAG: sha-${{ github.sha }}
