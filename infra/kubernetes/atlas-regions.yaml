@@ -139,7 +139,7 @@ spec:
               memory: 32Mi
             limits:
               cpu: 250m
-              memory: 160Mi
+              memory: 180Mi
           ports:
             - containerPort: 8080
           readinessProbe:
