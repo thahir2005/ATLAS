@@ -5,6 +5,12 @@ on:
     branches:
       - main
       - feature/independent-monitoring
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'go.mod'
+      - 'go.sum'
+      - 'services/region-api/**'
   workflow_dispatch:
 
 permissions:
