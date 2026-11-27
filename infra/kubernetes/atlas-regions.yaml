@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: atlas
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mumbai-api
+  namespace: atlas
+spec:
+  selector:
+    matchLabels:
+      app: mumbai-api
+  template:
+    metadata:
+      labels:
+        app: mumbai-api
+        region: mumbai
+    spec:
+      containers:
+        - name: regional-api
+          image: ghcr.io/thahir2005/atlas-region-api:sha-1b058c5
+          imagePullPolicy: IfNotPresent
+          args: ["--listen=:8080", "--region=Mumbai"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mumbai-api
+  namespace: atlas
+spec:
+  selector:
+    app: mumbai-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: singapore-api
+  namespace: atlas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: singapore-api
+  template:
+    metadata:
+      labels:
+        app: singapore-api
+        region: singapore
+    spec:
+      containers:
+        - name: regional-api
+          image: ghcr.io/thahir2005/atlas-region-api:sha-1b058c5
+          imagePullPolicy: IfNotPresent
+          args: ["--listen=:8080", "--region=Singapore"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: singapore-api
+  namespace: atlas
+spec:
+  selector:
+    app: singapore-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frankfurt-api
+  namespace: atlas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frankfurt-api
+  template:
+    metadata:
+      labels:
+        app: frankfurt-api
+        region: frankfurt
+    spec:
+      containers:
+        - name: regional-api
+          image: ghcr.io/thahir2005/atlas-region-api:sha-1b058c5
+          imagePullPolicy: IfNotPresent
+          args: ["--listen=:8080", "--region=Frankfurt"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frankfurt-api
+  namespace: atlas
+spec:
+  selector:
+    app: frankfurt-api
+  ports:
+    - port: 8080
+      targetPort: 8080
