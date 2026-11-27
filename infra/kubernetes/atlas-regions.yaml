@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: regional-api
-          image: ghcr.io/thahir2005/atlas-region-api:sha-9a53c1343f3bd742657893feb032909716160be1
+          image: ghcr.io/thahir2005/atlas-region-api:sha-6e80f34cfdb95c9935540be022f199b4b8a93f34
           imagePullPolicy: IfNotPresent
           args: ["--listen=:8080", "--region=Mumbai"]
           securityContext:
@@ -93,7 +93,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: regional-api
-          image: ghcr.io/thahir2005/atlas-region-api:sha-9a53c1343f3bd742657893feb032909716160be1
+          image: ghcr.io/thahir2005/atlas-region-api:sha-6e80f34cfdb95c9935540be022f199b4b8a93f34
           imagePullPolicy: IfNotPresent
           args: ["--listen=:8080", "--region=Singapore"]
           securityContext:
@@ -160,7 +160,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: regional-api
-          image: ghcr.io/thahir2005/atlas-region-api:sha-9a53c1343f3bd742657893feb032909716160be1
+          image: ghcr.io/thahir2005/atlas-region-api:sha-6e80f34cfdb95c9935540be022f199b4b8a93f34
           imagePullPolicy: IfNotPresent
           args: ["--listen=:8080", "--region=Frankfurt"]
           securityContext:
