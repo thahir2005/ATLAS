@@ -30,8 +30,21 @@ func respond(w http.ResponseWriter, status string) {
 
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8080", "HTTP listen address")
+	healthcheck := flag.Bool("healthcheck", false, "Check local HTTP health endpoint")
 	regionFlag := flag.String("region", "unknown", "Region name")
 	flag.Parse()
+
+	if *healthcheck {
+		resp, err := http.Get("http://127.0.0.1:8080/health")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			log.Fatalf("health check failed: %s", resp.Status)
+		}
+		return
+	}
 
 	region = *regionFlag
 

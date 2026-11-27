@@ -1,0 +1,43 @@
+services:
+  mumbai:
+    build: .
+    image: atlas-region-api:dev
+    container_name: atlas-mumbai-api
+    command: ["--listen=:8080", "--region=Mumbai"]
+    ports:
+      - "18081:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/atlas-region-api", "--healthcheck"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  singapore:
+    image: atlas-region-api:dev
+    container_name: atlas-singapore-api
+    command: ["--listen=:8080", "--region=Singapore"]
+    ports:
+      - "18082:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/atlas-region-api", "--healthcheck"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  frankfurt:
+    image: atlas-region-api:dev
+    container_name: atlas-frankfurt-api
+    command: ["--listen=:8080", "--region=Frankfurt"]
+    ports:
+      - "18083:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/atlas-region-api", "--healthcheck"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
