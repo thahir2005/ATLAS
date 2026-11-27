@@ -151,7 +151,25 @@ spec:
       labels:
         app: frankfurt-api
         region: frankfurt
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "atlas-api"
+        vault.hashicorp.com/agent-service-account-token-volume-name: "vault-token"
+        vault.hashicorp.com/agent-inject-secret-db-creds: "atlas/data/database"
+        vault.hashicorp.com/agent-inject-template-db-creds: |
+          {{- with secret "atlas/data/database" -}}
+          username={{ .Data.data.username }}
+          environment={{ .Data.data.environment }}
+          {{- end }}
     spec:
+      volumes:
+        - name: vault-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: vault
+                  expirationSeconds: 3600
+                  path: token
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
